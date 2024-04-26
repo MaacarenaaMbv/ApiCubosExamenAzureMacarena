@@ -15,7 +15,14 @@ namespace ApiCubosExamenAzureMacarena.Repositories
 
         public async Task<List<Cubo>> GetCubosAsync()
         {
-            return await this.context.Cubos.ToListAsync();
+            List<Cubo> cubos =  await this.context.Cubos.ToListAsync();
+            string urlStorage = "https://storageaccountmacarena.blob.core.windows.net/imagenesexamen/";
+            foreach (var item in cubos)
+            {
+                item.Imagen = urlStorage + item.Imagen;
+            }
+            return cubos;
+
         }
 
         public async Task<List<Cubo>> FindCuboAsync(string marca)
