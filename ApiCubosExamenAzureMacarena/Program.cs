@@ -1,10 +1,26 @@
 using ApiCubosExamenAzureMacarena.Data;
 using ApiCubosExamenAzureMacarena.Helpers;
 using ApiCubosExamenAzureMacarena.Repositories;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAzureClients(factory =>
+{
+    factory.AddSecretClient
+    (builder.Configuration.GetSection("KeyVault"));
+});
+
+SecretClient secretClient = 
+    builder.Services.BuildServiceProvider().GetService<SecretClient>();
+
+KeyVaultSecret secret =
+    await secretClient.GetSecretAsync("secretoconnection");
+string connectionString = secret.Value;
+
 
 HelperActionServicesOAuth helper = 
     new HelperActionServicesOAuth(builder.Configuration);
@@ -16,8 +32,6 @@ builder.Services.AddAuthentication
 
 
 // Add services to the container.
-string connectionString =
-    builder.Configuration.GetConnectionString("SqlAzure");
 builder.Services.AddTransient<RepositoryCubos>();
 builder.Services.AddDbContext<CubosContext>
     (options => options.UseSqlServer(connectionString));
@@ -29,7 +43,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Api OAuth Empleados",
+        Title = "Api OAuth Cubos",
         Description = "Api con Token de seguridad"
     });
 });

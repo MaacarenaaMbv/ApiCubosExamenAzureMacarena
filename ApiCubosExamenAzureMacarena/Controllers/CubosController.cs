@@ -44,5 +44,17 @@ namespace ApiCubosExamenAzureMacarena.Controllers
             return usuario;
         }
 
+        [Authorize]
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<List<CompraCubos>>> PedidosUsuario()
+        {
+            Claim claim = HttpContext.User.FindFirst(x => x.Type == "UserData");
+            string jsonUsuario = claim.Value;
+
+            UsuarioCubo usuario = JsonConvert.DeserializeObject<UsuarioCubo>(jsonUsuario);
+            return await this.repo.PedidosUsuario(usuario);
+        }
+
     }
 }

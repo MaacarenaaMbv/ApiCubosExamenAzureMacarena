@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Azure.Security.KeyVault.Secrets;
+using Azure.Identity;
 
 namespace ApiCubosExamenAzureMacarena.Helpers
 {
@@ -13,13 +15,34 @@ namespace ApiCubosExamenAzureMacarena.Helpers
 
         public HelperActionServicesOAuth(IConfiguration configuration)
         {
-            this.Issuer =
+            /*this.Issuer =
                 configuration.GetValue<string>("ApiOAuth:Issuer");
             this.Audience =
                 configuration.GetValue<string>("ApiOAuth:Audience");
             this.SecretKey =
-                configuration.GetValue<string>("ApiOAuth:SecretKey");
+                configuration.GetValue<string>("ApiOAuth:SecretKey");*/
+
+            var KeyVaultUri = configuration.GetValue<string>("KeyVault:VaultUri");
+            var secretClient = new SecretClient(new Uri(KeyVaultUri), new DefaultAzureCredential());
+            this.Issuer = GetSecretValue(secretClient, "secretoissuer");
+            this.Audience = GetSecretValue(secretClient, "secretoaudience");
+            this.SecretKey = GetSecretValue(secretClient, "secretosecretkey");
+
         }
+
+        private string GetSecretValue(SecretClient secretClient, string secretName)
+        {
+            try
+            {
+                KeyVaultSecret secret = secretClient.GetSecret(secretName);
+                return secret.Value;
+            }catch (Exception ex)
+            {
+                throw new Exception("No se pudo obtener el secreto " + secretName + " del key vault." + ex.Message);
+
+            }
+        }
+
 
         public SymmetricSecurityKey GetKeyToken()
         {

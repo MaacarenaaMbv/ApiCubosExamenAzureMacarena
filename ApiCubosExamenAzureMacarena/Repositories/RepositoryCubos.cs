@@ -25,6 +25,13 @@ namespace ApiCubosExamenAzureMacarena.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<CompraCubos>> PedidosUsuario(UsuarioCubo usuario)
+        {
+            return await this.context.CompraCubos
+                .Where(x => x.IdUsuario  == usuario.IdUsuario)
+                .ToListAsync();
+        }
+
         public async Task<UsuarioCubo> LogInUsuarioAsync(string email, string password)
         {
             return await this.context.UsuarioCubos
